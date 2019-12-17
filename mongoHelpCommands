@@ -1,0 +1,85 @@
+locate -b '\mongo  --> /usr/bin/mongo
+
+sudo service mongod start
+
+sudo service mongod status
+
+sudo service mongod stop
+
+sudo service mongod restart
+
+
+default config
+/etc/mongodb.conf
+
+set a mongo dbpath
+sudo mongod --dbpath /var/lib/mongodb
+
+
+en shell mongo
+-para entrar en shell mongo
+mongo
+
+--show current db
+db
+
+show dbs
+
+use mydb
+
+show collections
+
+db.ebooks.insert({
+ "Nombre":"Alexandre",
+ "Apellido":"Dumas",
+ "Títulos": [ { "Nombre":"Los tres Mosqueteros",
+ "Año": 1844 },
+ { "Nombre":"El Conde de Montecristo",
+ "Año":"1844" }
+ ]
+},
+{
+ "Author":"Alexandre Dumas, hijo",
+ "Titles": [ { "Nombre":"La Dama de las Camelias",
+ "Año": 1848 },
+ { "Nombre":"El caso Clemenceau",
+ "Año": 1867
+ }
+ ]
+})
+
+db.ebooks.count()
+
+db.ebooks.findOne()
+
+db.ebooks.find().pretty
+
+db.ebooks.find().sort({Apellido:1})
+
+function a(){
+for (cont = 0; cont < 100; cont++)
+ db.ebooks.insert(
+ {"Autor":Math.random().toString(36).slice(2,12),
+ "Titulo":[{"Nombre":Math.random().toString(36).slice(2),
+ "Genero":genGenre (),
+ "Año": Math.floor((Math.random()*215)+1800)} ]
+ } ); 
+}
+
+db.ebooks.find()
+it --> para mostrar mas
+
+
+mongo | tee myspoolmongo.txt
+
+---
+compras.9 $exist: true
+
+
+
+cp -i mini.json /usr/bin/
+mongoimport --db mydb --collection cafe --file mini.json --type json 
+
+
+mongoimport --db mydb --collection cafe --file /home/axxa/Downloads/mini.json --type json 
+

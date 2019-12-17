@@ -1,0 +1,308 @@
+-----------en shell
+
+mongoimport --db practicaMongo --collection cPractica <"/gitRepo/uc3m-BigData/mongoPractica/data.json"
+
+2019-12-17T16:57:43.910+0100	connected to: mongodb://localhost/
+2019-12-17T16:57:44.915+0100	4230 document(s) imported successfully. 0 document(s) failed to import.
+
+-----------en mongo
+
+use practicaMongo
+
+> show collections
+cPractica
+mytest
+> 
+> db.cPractica.count()
+4230
+>
+> db.cPractica.findOne()
+{
+	"_id" : "SI23361/12/1/2016",
+	"billing" : "January 2016",
+	"TOTAL" : 16.65,
+	"Client" : {
+		"customer code" : "69/61727784/11T",
+		"DNI" : "96607380C",
+		"Name" : "Torcado",
+		"Surname" : "Lopez",
+		"Birth date" : "15/02/76",
+		"Phone" : 555921230,
+		"Email" : "torcado@may.laim.ucetreseme.kom"
+	},
+	"contract" : {
+		"contract ID" : "SI23361/12",
+		"start date" : "26/11/14",
+		"end date" : "25/11/16",
+		"product" : {
+			"Reference" : "Free Rider",
+			"monthly fee" : 10,
+			"type" : "pay per content",
+			"cost per content" : 2.5,
+			"zapping" : 5,
+			"cost per minute" : 0,
+			"cost per day" : 0.95,
+			"promotion" : 5
+		},
+		"address" : "145 Flower Avenue, Fourth floor",
+		"town" : "New Farawayforest",
+		"ZIP" : "48998",
+		"country" : "Slovenia"
+	},
+	"Series" : [
+		{
+			"Date" : "12/01/2016",
+			"Time" : "20:32:00",
+			"Title" : "Person of Interest",
+			"Season" : 2,
+			"Episode" : 14,
+			"Avg duration" : 43,
+			"Total Episodes" : 22,
+			"Total Seasons" : 5,
+			"License" : {
+				"Date" : "12/01/2016",
+				"Time" : "00:00:00"
+			},
+			"Viewing PCT" : 41
+		},
+		{
+			"Date" : "16/01/2016",
+			"Time" : "01:28:00",
+			"Title" : "Person of Interest",
+			"Season" : 2,
+			"Episode" : 15,
+			"Avg duration" : 43,
+			"Total Episodes" : 22,
+			"Total Seasons" : 5,
+			"License" : {
+				"Date" : "16/01/2016",
+				"Time" : "00:00:00"
+			},
+			"Viewing PCT" : 100
+		},
+		{
+			"Date" : "17/01/2016",
+			"Time" : "15:31:00",
+			"Title" : "Person of Interest",
+			"Season" : 2,
+			"Episode" : 16,
+			"Avg duration" : 43,
+			"Total Episodes" : 22,
+			"Total Seasons" : 5,
+			"License" : {
+				"Date" : "17/01/2016",
+				"Time" : "00:00:00"
+			},
+			"Viewing PCT" : 100
+		},
+		{
+			"Date" : "19/01/2016",
+			"Time" : "22:35:00",
+			"Title" : "Person of Interest",
+			"Season" : 2,
+			"Episode" : 17,
+			"Avg duration" : 43,
+			"Total Episodes" : 22,
+			"Total Seasons" : 5,
+			"License" : {
+				"Date" : "19/01/2016",
+				"Time" : "00:00:00"
+			},
+			"Viewing PCT" : 99
+		},
+		{
+			"Date" : "20/01/2016",
+			"Time" : "07:05:00",
+			"Title" : "Person of Interest",
+			"Season" : 2,
+			"Episode" : 18,
+			"Avg duration" : 43,
+			"Total Episodes" : 22,
+			"Total Seasons" : 5,
+			"License" : {
+				"Date" : "20/01/2016",
+				"Time" : "00:00:00"
+			},
+			"Viewing PCT" : 100
+		},
+		{
+			"Date" : "26/01/2016",
+			"Time" : "20:35:00",
+			"Title" : "Person of Interest",
+			"Season" : 2,
+			"Episode" : 19,
+			"Avg duration" : 43,
+			"Total Episodes" : 22,
+			"Total Seasons" : 5,
+			"License" : {
+				"Date" : "26/01/2016",
+				"Time" : "00:00:00"
+			},
+			"Viewing PCT" : 4
+		},
+		{
+			"Date" : "28/01/2016",
+			"Time" : "18:10:00",
+			"Title" : "Person of Interest",
+			"Season" : 2,
+			"Episode" : 20,
+			"Avg duration" : 43,
+			"Total Episodes" : 22,
+			"Total Seasons" : 5,
+			"License" : {
+				"Date" : "28/01/2016",
+				"Time" : "00:00:00"
+			},
+			"Viewing PCT" : 100
+		},
+		{
+			"Date" : "30/01/2016",
+			"Time" : "16:53:00",
+			"Title" : "Person of Interest",
+			"Season" : 2,
+			"Episode" : 21,
+			"Avg duration" : 43,
+			"Total Episodes" : 22,
+			"Total Seasons" : 5,
+			"License" : {
+				"Date" : "30/01/2016",
+				"Time" : "00:00:00"
+			},
+			"Viewing PCT" : 100
+		},
+		{
+			"Date" : "31/01/2016",
+			"Time" : "06:51:00",
+			"Title" : "Person of Interest",
+			"Season" : 2,
+			"Episode" : 22,
+			"Avg duration" : 43,
+			"Total Episodes" : 22,
+			"Total Seasons" : 5,
+			"License" : {
+				"Date" : "31/01/2016",
+				"Time" : "00:00:00"
+			},
+			"Viewing PCT" : 5
+		}
+	],
+	"charge date" : "03/05/17",
+	"dump date" : "19/12/15"
+}
+> 
+
+
+1. ExM: clientes con dos apellidos con contrato fuera de España (aportar nombre, apellido y país).
+Descripción de la solución: Se ejecuta la funcion find sobre la coleccion que contiene la data. Dentro de la funcion hay condiciones de busqueda sobre el apellido en el cual se restringe a un array de 2 posiciones, y sobre el pais en el cual se restringe que sea diferente de España. Posterior se validan los atributos de proyeccion: nombre, apellido y pais
+Código: db.cPractica.find( { "Client.Surname": {$size:2 } , "contract.country": { $ne: "España" } }, {"_id":0,"Client.Name":1,"Client.Surname":1,"contract.country":1})
+Pruebas:
+
+{ "Client" : { "Name" : "Victor Enrique", "Surname" : [ "Apaza", "Okuma" ] }, "contract" : { "country" : "Jordan" } }
+{ "Client" : { "Name" : "Maria del Altagracia", "Surname" : [ "Fuentes", "Castellanos" ] }, "contract" : { "country" : "Saint Lucia" } }
+{ "Client" : { "Name" : "Jaime", "Surname" : [ "Aliaga", "Oporto" ] }, "contract" : { "country" : "Macedonia" } }
+{ "Client" : { "Name" : "M. Carmela", "Surname" : [ "Maranon", "Solis" ] }, "contract" : { "country" : "British Indian Ocean Territory" } }
+{ "Client" : { "Name" : "Ignacio", "Surname" : [ "Guillen", "Perez" ] }, "contract" : { "country" : "Japan" } }
+{ "Client" : { "Name" : "Atila", "Surname" : [ "Ruiz", "Gomez" ] }, "contract" : { "country" : "United Arab Emirates" } }
+{ "Client" : { "Name" : "Amaya", "Surname" : [ "Calero", "Garcia" ] }, "contract" : { "country" : "Lebanon" } }
+{ "Client" : { "Name" : "Monica", "Surname" : [ "Hernandez", "Malpartida" ] }, "contract" : { "country" : "British Indian Ocean Territory" } }
+{ "Client" : { "Name" : "Daniel David", "Surname" : [ "Diaz", "Illescas" ] }, "contract" : { "country" : "Uruguay" } }
+{ "Client" : { "Name" : "Maria de la Fortuna", "Surname" : [ "Martinez", "Lopez" ] }, "contract" : { "country" : "Gibraltar" } }
+{ "Client" : { "Name" : "Iban", "Surname" : [ "Olivas", "Mendieta" ] }, "contract" : { "country" : "Suriname" } }
+{ "Client" : { "Name" : "Matias", "Surname" : [ "Prince", "Solis" ] }, "contract" : { "country" : "Malawi" } }
+{ "Client" : { "Name" : "Chavela", "Surname" : [ "Tuesta", "Martinez" ] }, "contract" : { "country" : "Brazil" } }
+{ "Client" : { "Name" : "Daisy", "Surname" : [ "Supo", "Escajadillo" ] }, "contract" : { "country" : "Philippines" } }
+{ "Client" : { "Name" : "Armando", "Surname" : [ "Ventocilla", "Copa" ] }, "contract" : { "country" : "Sri Lanka" } }
+{ "Client" : { "Name" : "Alberto", "Surname" : [ "Camayo", "Prudencio" ] }, "contract" : { "country" : "Liechtenstein" } }
+{ "Client" : { "Name" : "Manuel Oscar", "Surname" : [ "Huapaya", "Alatriste-Gomez" ] }, "contract" : { "country" : "Pitcairn" } }
+{ "Client" : { "Name" : "Victor", "Surname" : [ "Ruiz", "Bocanegra" ] }, "contract" : { "country" : "Panama" } }
+{ "Client" : { "Name" : "Silvia", "Surname" : [ "Montesinos", "Escobar" ] }, "contract" : { "country" : "Belgium" } }
+{ "Client" : { "Name" : "Leandro", "Surname" : [ "Ortiz", "Ferro" ] }, "contract" : { "country" : "Zimbabwe" } }
+Type "it" for more
+> 
+
+2. User-Ganga: facturación de clientes que no han consumido nada en un mes (DNI y total).
+Descripción de la solución: Se crea una variable "currentDateMinusAMonth" que guarde la fecha actual menos un mes, y posterior se hace la busqueda sobre charge date donde la fecha sea menor a currentDateMinusAMonth
+Código:
+
+var currentDateMinusAMonth = new Date();
+currentDateMinusAMonth.setMonth(currentDateMinusAMonth.getMonth() - 1);
+
+db.cPractica.find(
+   {"charge date": {$lte: currentDateMinusAMonth.toString()}},{"Client.DNI":1,"TOTAL":1}
+);
+
+Pruebas: 
+
+{ "_id" : "SI23361/12/1/2016", "TOTAL" : 16.65, "Client" : { "DNI" : "96607380C" } }
+{ "_id" : "JO30887/12/1/2016", "TOTAL" : 13.8, "Client" : { "DNI" : "61475943W" } }
+{ "_id" : "FM23440/03/1/2016", "TOTAL" : 21.6, "Client" : { "DNI" : "84001081K" } }
+{ "_id" : "SK15987/03/1/2016", "TOTAL" : 15.7, "Client" : { "DNI" : "05131232R" } }
+{ "_id" : "CN38838/10/1/2016", "TOTAL" : 15.7, "Client" : { "DNI" : "31220800W" } }
+{ "_id" : "IQ38436/12/1/2016", "TOTAL" : 17.6, "Client" : { "DNI" : "66312279J" } }
+{ "_id" : "CA31157/13/1/2016", "TOTAL" : 17.6, "Client" : { "DNI" : "16304184J" } }
+{ "_id" : "AW16095/07/1/2016", "TOTAL" : 19.5, "Client" : { "DNI" : "90458603V" } }
+{ "_id" : "MH32588/01/1/2016", "TOTAL" : 16.65, "Client" : { "DNI" : "34983718M" } }
+{ "_id" : "TR16117/14/1/2016", "TOTAL" : 16.65, "Client" : { "DNI" : "71292980H" } }
+{ "_id" : "LC39936/10/1/2016", "TOTAL" : 17.6, "Client" : { "DNI" : "68534833P" } }
+{ "_id" : "MK23180/11/1/2016", "TOTAL" : 16.65, "Client" : { "DNI" : "83383980X" } }
+{ "_id" : "IO17305/12/1/2016", "TOTAL" : 16.65, "Client" : { "DNI" : "86057826Z" } }
+{ "_id" : "PT23432/01/1/2016", "TOTAL" : 15.7, "Client" : { "DNI" : "93566516D" } }
+{ "_id" : "MS32374/09/1/2016", "TOTAL" : 21.6, "Client" : { "DNI" : "59427180X" } }
+{ "_id" : "NI17222/07/1/2016", "TOTAL" : 15.7, "Client" : { "DNI" : "58280466F" } }
+{ "_id" : "ES38816/09/1/2016", "TOTAL" : 13.8, "Client" : { "DNI" : "53887554A" } }
+{ "_id" : "AQ25477/08/1/2016", "TOTAL" : 17.6, "Client" : { "DNI" : "01581449S" } }
+{ "_id" : "RO31046/04/1/2016", "TOTAL" : 13.8, "Client" : { "DNI" : "54641232V" } }
+{ "_id" : "MT17374/05/1/2016", "TOTAL" : 16.65, "Client" : { "DNI" : "58359966L" } }
+Type "it" for more
+
+
+3. Secuela parece: DNI y títulos de películas que hayan visto los clientes que han visualizado
+películas cuyos títulos contienen guarismos pero no al principio ni final del título.
+Descripción de la solución:
+
+Se llama la funcion aggregate haciendo unwind para obtener Movies y poder filtrarlo con el regex sobre el titulo
+Regex:
+	Indica el inicio con al menos una letra del alfabeto: ^([a-z]|[A-Z])+
+	Indica al menos un numero posterior:[0-9]+
+	Indica al final con al menos una letra del alfabeto: [a-z]|[A-Z])+$
+
+posterior se hace la proyeccion del DNI y los titulos
+
+Código:
+
+db.cPractica.aggregate([
+{
+    $unwind: '$Movies'
+},
+{
+    $match: {"Movies.Title": new RegExp('^([a-z]|[A-Z])+[0-9]+([a-z]|[A-Z])+$') }
+},
+
+{
+    $project: {
+        _id: 0,
+        DNI: '$Client.DNI',
+        Movies: '$Movies.Title'
+     }
+}]);
+
+
+Pruebas: 
+
+{ "DNI" : "52362765E", "Movies" : "Thr3e" }
+{ "DNI" : "34440819K", "Movies" : "Se7en" }
+{ "DNI" : "69880671R", "Movies" : "Thr3e" }
+{ "DNI" : "91899912P", "Movies" : "Thr3e" }
+{ "DNI" : "94901575X", "Movies" : "Thr3e" }
+{ "DNI" : "79227726V", "Movies" : "Thr3e" }
+{ "DNI" : "61293350Y", "Movies" : "Se7en" }
+{ "DNI" : "91346198L", "Movies" : "Se7en" }
+{ "DNI" : "16724613W", "Movies" : "Se7en" }
+{ "DNI" : "72543050S", "Movies" : "Se7en" }
+{ "DNI" : "24403094W", "Movies" : "Thr3e" }
+> 
+
+
+
+
+
