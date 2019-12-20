@@ -310,5 +310,66 @@ Pruebas:
 
 
 
+4. ZappersLand: (resolver con GROUP) para cada país, porcentaje de visualizaciones que han
+sido interrumpidas antes del 5% de visualización, y porcentaje de visualizaciones completas
+(para éstas, se considera como completa toda visualización que alcance el 95%, ya que el resto
+pueden ser rótulos de crédito).
+Descripción de la solución:
+Se facilita parte del código para superar ciertos obstáculos iniciales en el manejo de JavaScript.
+Observa que la consulta afecta a películas y series, y por eso han de tenerse en cuenta ambos
+atributos (primero uno y luego otro). Además, los atributos Movies y Series son opcionales, y
+por ello hay que asegurarse de que existan antes de utilizarlos (de otro modo, dará error al
+procesar el primer documento que no contenga uno de ellos). Por último, observa los
+contratiempos que puede generar utilizar atributos cuyos nombres contengan espacios en lugar
+de CamelCasedVariableNames. En este caso, Javascript admite la notación de punto y la
+notación corchete, y es gracias a una combinación de ambas que conseguimos superar el
+obstáculo.
+Código:
 
 
+var mapFunc = function() {
+   for (var idx = 0; idx < doc.Movies.length; idx++) {
+       var key = doc.Movies[idx].Title;
+       var value = {
+                     count: 1,
+                     Title: doc._id
+                   };
+       emit(key, value);
+   }
+};
+
+var mapFunc2 = function() {
+    array = [];
+    for (var idx = 0; idx < doc.Movies.length; idx++) {
+        value = { time: this.time, error: this.text };
+        array.push(value);
+        emit(doc._id, {a:array});
+     }
+    
+};
+
+var reduceFunc = function (doc,res) {
+	 if (typeof doc.Movies !== "undefined" && doc.Movies !== null)
+	 { 
+	 	for (peli of doc.Movies){pct=peli["Viewing PCT"];}
+	 };
+	 if (typeof doc.Series !== "undefined" && doc.Series !== null)
+	 { 
+	 	for (epi of doc.Series){ pct=epi["Viewing PCT"];}
+	 };
+};
+
+var finalizeFunc = function(key, total) {
+	var aux=total*100/count;
+	return {occurrences:total, pct:aux.toString().slice(0,5)+" %"};
+};
+
+db.cPractica.mapReduce( 
+	 this.Movies,//mapFunc,
+     reduceFunc,
+     {
+       out: { merge: "map_reduce_example" },
+       query: {"contract.country":{$exists:1}},
+       finalize: finalizeFunc
+     }
+)
