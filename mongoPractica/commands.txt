@@ -1,6 +1,12 @@
 -----------en shell
-
+Linux:
 mongoimport --db practicaMongo --collection cPractica <"/gitRepo/uc3m-BigData/mongoPractica/data.json"
+Windows
+mongoimport --db practicaMongo --collection cPractica <"D:\DEV\mongo3.4.23\practica3\uc3m-bigData\mongoPractica\data.json"
+
+Start mongo
+D:\DEV\mongo3.4.23\bin\mongod.exe --dbpath D:\DEV\mongo3.4.23\data
+
 
 2019-12-17T16:57:43.910+0100	connected to: mongodb://localhost/
 2019-12-17T16:57:44.915+0100	4230 document(s) imported successfully. 0 document(s) failed to import.
