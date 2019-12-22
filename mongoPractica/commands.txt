@@ -200,7 +200,8 @@ mytest
 
 1. ExM: clientes con dos apellidos con contrato fuera de España (aportar nombre, apellido y país).
 Descripción de la solución: Se ejecuta la funcion find sobre la coleccion que contiene la data. Dentro de la funcion hay condiciones de busqueda sobre el apellido en el cual se restringe a un array de 2 posiciones, y sobre el pais en el cual se restringe que sea diferente de España. Posterior se validan los atributos de proyeccion: nombre, apellido y pais
-Código: db.cPractica.find( { "Client.Surname": {$size:2 } , "contract.country": { $ne: "España" } }, {"_id":0,"Client.Name":1,"Client.Surname":1,"contract.country":1})
+Código: 
+	db.cPractica.find( { "Client.Surname": {$size:2 } , "contract.country": { $ne: "España" } }, {"_id":0,"Client.Name":1,"Client.Surname":1,"contract.country":1})
 Pruebas:
 
 { "Client" : { "Name" : "Victor Enrique", "Surname" : [ "Apaza", "Okuma" ] }, "contract" : { "country" : "Jordan" } }
@@ -326,50 +327,133 @@ notación corchete, y es gracias a una combinación de ambas que conseguimos sup
 obstáculo.
 Código:
 
+db.cPractica.group( {
+key:{"contract.country":1},
+cond: {"contract.country":{$exists:1}},
+initial:{card:0, low:0, high:0},
+reduce: function(doc,res) {
+ if (typeof doc.Series !== "undefined" && doc.Series !== null)
+ { 
+	 for (epi of doc.Series){ 
+		pct=epi["Viewing PCT"];
+		if(pct < 5){
+			res.low++;
+		}
+		if(pct > 95){
+			res.high++;
+		}
+		res.card++;
+	 }
+ };
+},
+finalize: function(res) {
+	res.media_low=(res.low/res.card)*100  + ' %';
+	res.media_high=(res.high/res.card)*100 + ' %';
+ }
+}); 
 
-var mapFunc = function() {
-   for (var idx = 0; idx < doc.Movies.length; idx++) {
-       var key = doc.Movies[idx].Title;
-       var value = {
-                     count: 1,
-                     Title: doc._id
-                   };
-       emit(key, value);
-   }
-};
+Pruebas: No copio todo los valores que me regresa la consulta, solo unos pocos:
 
-var mapFunc2 = function() {
-    array = [];
-    for (var idx = 0; idx < doc.Movies.length; idx++) {
-        value = { time: this.time, error: this.text };
-        array.push(value);
-        emit(doc._id, {a:array});
-     }
-    
-};
+        {
+                "contract.country" : "Saudi Arabia",
+                "card" : 91,
+                "low" : 15,
+                "high" : 70,
+                "media_low" : "16.483516483516482 %",
+                "media_high" : "76.92307692307693 %"
+        },
+        {
+                "contract.country" : "Solomon Islands",
+                "card" : 117,
+                "low" : 15,
+                "high" : 97,
+                "media_low" : "12.82051282051282 %",
+                "media_high" : "82.90598290598291 %"
+        },
+        {
+                "contract.country" : "Madagascar",
+                "card" : 61,
+                "low" : 7,
+                "high" : 49,
+                "media_low" : "11.475409836065573 %",
+                "media_high" : "80.32786885245902 %"
+        }
+		
+5. Género-Favorito: (resolver con map-reduce) para cada género cinematográfico, cantidad de
+visionados de películas de ese género y porcentaje medio de visionado de esas películas.
+Descripción de la solución:
+	Map: Se valida que exista el atributo Movies y Genres, posterior se emite el valor (ej: (Action,1) ) y se hace conteo para calcular los porcentajes
+	Reduce: Se suman las cantidades por genero (ej: (Action,1) + (Action,1) = (Action,2)
+	Finalize: Se calculan los porcentajes de visionado
+Código:
+	var mapGen = function() {
+		if (typeof this.Movies !== "undefined" && this.Movies !== null)
+			for (var i = 0, len = this.Movies.length; i < len; i++) {
+				var detalle = this.Movies[i].Details;
+				if (typeof detalle.Genres !== "undefined" && detalle.Genres !== null)
+				for (var j = 0, len2 = detalle.Genres.length; j < len2; j++) {
+					emit(detalle.Genres[j],1);
+					count++;
+				}
+			}
+		
+	}
+	var redGen = function(key, cant) {
+		return Array.sum(cant);
+	};
+	
+	db.cPractica.mapReduce(mapGen,redGen, 
+		{ 
+			out:"favGenres",
+			scope:{count:0},
+			finalize:function(key, total){
+				var aux=total*100/count;
+				return {occurrences:total, pct: aux};
+			}
+		 } 
+	);	
+	
+	db.favGenres.find();	
 
-var reduceFunc = function (doc,res) {
-	 if (typeof doc.Movies !== "undefined" && doc.Movies !== null)
-	 { 
-	 	for (peli of doc.Movies){pct=peli["Viewing PCT"];}
-	 };
-	 if (typeof doc.Series !== "undefined" && doc.Series !== null)
-	 { 
-	 	for (epi of doc.Series){ pct=epi["Viewing PCT"];}
-	 };
-};
 
-var finalizeFunc = function(key, total) {
-	var aux=total*100/count;
-	return {occurrences:total, pct:aux.toString().slice(0,5)+" %"};
-};
+Pruebas: 
 
-db.cPractica.mapReduce( 
-	 this.Movies,//mapFunc,
-     reduceFunc,
-     {
-       out: { merge: "map_reduce_example" },
-       query: {"contract.country":{$exists:1}},
-       finalize: finalizeFunc
-     }
-)
+> db.favGenres.find();
+{ "_id" : "Action", "value" : { "occurrences" : 3889, "pct" : 7.947926672252764 } }
+{ "_id" : "Adventure", "value" : { "occurrences" : 3109, "pct" : 6.353845210602685 } }
+{ "_id" : "Animation", "value" : { "occurrences" : 835, "pct" : 1.7064846416382253 } }
+{ "_id" : "Biography", "value" : { "occurrences" : 966, "pct" : 1.9742085794281743 } }
+{ "_id" : "Comedy", "value" : { "occurrences" : 6298, "pct" : 12.871185955733583 } }
+{ "_id" : "Crime", "value" : { "occurrences" : 3047, "pct" : 6.22713617134332 } }
+{ "_id" : "Documentary", "value" : { "occurrences" : 384, "pct" : 0.7847785657354234 } }
+{ "_id" : "Drama", "value" : { "occurrences" : 8727, "pct" : 17.835319122846457 } }
+{ "_id" : "Family", "value" : { "occurrences" : 1872, "pct" : 3.825795507960189 } }
+{ "_id" : "Fantasy", "value" : { "occurrences" : 2023, "pct" : 4.134393329382191 } }
+{ "_id" : "Film-Noir", "value" : { "occurrences" : 28, "pct" : 0.057223437084874616 } }
+{ "_id" : "Game-Show", "value" : { "occurrences" : 3, "pct" : 0.006131082544807995 } }
+{ "_id" : "History", "value" : { "occurrences" : 692, "pct" : 1.4142363736690442 } }
+{ "_id" : "Horror", "value" : { "occurrences" : 1924, "pct" : 3.9320676054035273 } }
+{ "_id" : "Music", "value" : { "occurrences" : 722, "pct" : 1.475547199117124 } }
+{ "_id" : "Musical", "value" : { "occurrences" : 440, "pct" : 0.8992254399051726 } }
+{ "_id" : "Mystery", "value" : { "occurrences" : 1792, "pct" : 3.6622999734319754 } }
+{ "_id" : "News", "value" : { "occurrences" : 6, "pct" : 0.01226216508961599 } }
+{ "_id" : "Reality-TV", "value" : { "occurrences" : 6, "pct" : 0.01226216508961599 } }
+{ "_id" : "Romance", "value" : { "occurrences" : 3645, "pct" : 7.449265291941714 } }
+Type "it" for more
+
+
+
+6. Serial-Lovers: clientes que han visto al menos una temporada completa de una serie. Se
+proporcionará el DNI, y un listado con las series (título de la serie y lista de temporadas
+completas que ha visto).
+Descripción de la solución:
+Código:
+
+db.cPractica.aggregate([
+{$project:{"Client.DNI":1,_id:0}},
+{$unwind:"$Series"},
+{$match:{"Series.Season":{$gt:1}}},
+{$project:{"Series.Title":1,"Series.Season":1}}, 
+{$out:"Sales"} ]);
+
+Pruebas: 
