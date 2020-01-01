@@ -449,11 +449,13 @@ completas que ha visto).
 Descripción de la solución:
 Código:
 
+
 db.cPractica.aggregate([
-{$project:{"Client.DNI":1,_id:0}},
+{$project:{_id:0}},
 {$unwind:"$Series"},
 {$match:{"Series.Season":{$gt:1}}},
-{$project:{"Series.Title":1,"Series.Season":1}}, 
+{$project:{"Client.DNI":1, "Series.Title":1,"Series.Season":1}}, 
 {$out:"Sales"} ]);
+
 
 Pruebas: 
