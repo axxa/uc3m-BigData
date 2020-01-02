@@ -6,6 +6,7 @@ mongoimport --db practicaMongo --collection cPractica <"D:\DEV\mongo3.4.23\pract
 
 Start mongo
 D:\DEV\mongo3.4.23\bin\mongod.exe --dbpath D:\DEV\mongo3.4.23\data
+D:\mongo3.4.23\bin\mongod.exe --dbpath D:\mongo3.4.23\data
 
 
 2019-12-17T16:57:43.910+0100	connected to: mongodb://localhost/
@@ -446,16 +447,96 @@ Type "it" for more
 6. Serial-Lovers: clientes que han visto al menos una temporada completa de una serie. Se
 proporcionará el DNI, y un listado con las series (título de la serie y lista de temporadas
 completas que ha visto).
+
 Descripción de la solución:
+	Se hace  una operacion de agregacion sobre la coleccion en la cual se hace un unwind para 
+	extraer las Series y se filtra que la temporada sea mayor a 1 (Se asume que las temporadas 
+	anteriores ya fueron vistas por el cliente y que Series.Season corresponde a la temporada 
+	actual, es decir, si Series.Season == 3 entonces ya vio 2 temporadas). El resultado se guarda 
+	en otra coleccion en la que posteriormente se hace un aggregate para hacer un distinct sobre 
+	el DNI y la Serie vista.
+
 Código:
 
+	db.cPractica.aggregate([
+		{$project:{_id:0}},
+		{$unwind:"$Series"},
+		{$match:{"Series.Season":{$gt:1}}},
+		{$project:{"Client.DNI":1, "Series.Title":1, TemporadasCompletas : {$subtract: ["$Series.Season" , 1]} }}, 
+		{$out:"SerialLovers"} 
+	]);
 
-db.cPractica.aggregate([
-{$project:{_id:0}},
-{$unwind:"$Series"},
-{$match:{"Series.Season":{$gt:1}}},
-{$project:{"Client.DNI":1, "Series.Title":1,"Series.Season":1}}, 
-{$out:"Sales"} ]);
 
+	db.SerialLovers.aggregate([{"$group": { "_id": { Client: "$Client", Series: "$Series", TemporadasCompletas:"$TemporadasCompletas"}}}]);
 
+Pruebas: 
+
+{ "_id" : { "Client" : { "DNI" : "15625505H" }, "Series" : { "Title" : "The Sopranos" }, "TemporadasCompletas" : 2 } }
+{ "_id" : { "Client" : { "DNI" : "15625505H" }, "Series" : { "Title" : "Saturday Night Live" }, "TemporadasCompletas" : 20 } }
+{ "_id" : { "Client" : { "DNI" : "45016401L" }, "Series" : { "Title" : "Numb3rs" }, "TemporadasCompletas" : 4 } }
+{ "_id" : { "Client" : { "DNI" : "45016401L" }, "Series" : { "Title" : "Knight Rider" }, "TemporadasCompletas" : 1 } }
+{ "_id" : { "Client" : { "DNI" : "45016401L" }, "Series" : { "Title" : "Dr Who" }, "TemporadasCompletas" : 34 } }
+{ "_id" : { "Client" : { "DNI" : "17620216P" }, "Series" : { "Title" : "Monk" }, "TemporadasCompletas" : 1 } }
+{ "_id" : { "Client" : { "DNI" : "17620216P" }, "Series" : { "Title" : "Mad Men" }, "TemporadasCompletas" : 3 } }
+{ "_id" : { "Client" : { "DNI" : "17620216P" }, "Series" : { "Title" : "Cheers" }, "TemporadasCompletas" : 3 } }
+{ "_id" : { "Client" : { "DNI" : "09803499W" }, "Series" : { "Title" : "How I Met Your Mother" }, "TemporadasCompletas" : 8 } }
+{ "_id" : { "Client" : { "DNI" : "09803499W" }, "Series" : { "Title" : "Cheers" }, "TemporadasCompletas" : 1 } }
+{ "_id" : { "Client" : { "DNI" : "89281978A" }, "Series" : { "Title" : "Star Trek" }, "TemporadasCompletas" : 2 } }
+{ "_id" : { "Client" : { "DNI" : "89281978A" }, "Series" : { "Title" : "Perry Mason" }, "TemporadasCompletas" : 4 } }
+{ "_id" : { "Client" : { "DNI" : "89281978A" }, "Series" : { "Title" : "Hill Street Blues" }, "TemporadasCompletas" : 1 } }
+{ "_id" : { "Client" : { "DNI" : "32068286F" }, "Series" : { "Title" : "Poirot" }, "TemporadasCompletas" : 6 } }
+{ "_id" : { "Client" : { "DNI" : "32068286F" }, "Series" : { "Title" : "Murder, She Wrote" }, "TemporadasCompletas" : 10 } }
+{ "_id" : { "Client" : { "DNI" : "32068286F" }, "Series" : { "Title" : "Game of Thrones" }, "TemporadasCompletas" : 2 } }
+{ "_id" : { "Client" : { "DNI" : "32068286F" }, "Series" : { "Title" : "Bonanza" }, "TemporadasCompletas" : 8 } }
+{ "_id" : { "Client" : { "DNI" : "12549029E" }, "Series" : { "Title" : "Two and a Half Men" }, "TemporadasCompletas" : 5 } }
+{ "_id" : { "Client" : { "DNI" : "86681439M" }, "Series" : { "Title" : "Tell Me How It Happened" }, "TemporadasCompletas" : 15 } }
+{ "_id" : { "Client" : { "DNI" : "20354798M" }, "Series" : { "Title" : "Cheers" }, "TemporadasCompletas" : 10 } }
+Type "it" for more
+>
+
+7. Keyword: “bodrio”: 10 palabras clave que están en el decil superior de palabras clave que
+corresponden a películas abandonadas (se considera abandonada una película que no llega al 95
+% de visionado; si un cliente ha visualizado varias veces la misma película, se considera
+abandonada si ninguna de esas veces llega al 95%). Se requiere el decil en porcentaje de
+abandonos (con respecto al total de visualizaciones para cada palabra clave; si un cliente
+visualiza varias veces la misma película computa como una visualización). De ese conjunto de
+palabras clave, se requiere las 10 que presenten mayor visualización media (computando sólo
+películas abandonadas). Proporcionar la palabra clave, porcentaje de abandonos, y porcentaje
+medio de visualización.
+Descripción de la solución:
+Código:
+	
+	var mapGenBodrio = function() {
+		if (typeof this.Movies !== "undefined" && this.Movies !== null)
+			for (var i = 0, len = this.Movies.length; i < len; i++) {
+				if(this.Movies[i]["Viewing PCT"] < 95){
+					var title = this.Movies[i].Title;
+					var res = title.split(" ");
+					res.forEach(function(element){
+						if(element.length > 2 && element != "The" && element != "the" && element != "and" && element != "for"){
+							emit(element,1);
+							count++;
+						}
+					});
+					
+				}
+				
+			}
+		
+	}
+	var redGenBodrio = function(key, cant) {
+		return Array.sum(cant);
+	};
+	
+	
+	db.cPractica.mapReduce(mapGenBodrio,redGenBodrio, 
+		{ 
+			out:"pelisBodrio",
+			scope:{count:0}
+		 } 
+	);
+	
+	db.pelisBodrio.find();	
+	db.pelisBodrio.find().sort({value: -1}).limit(10)
+	
 Pruebas: 
