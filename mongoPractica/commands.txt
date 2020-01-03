@@ -278,21 +278,21 @@ posterior se hace la proyeccion del DNI y los titulos
 
 Código:
 
-db.cPractica.aggregate([
-{
-    $unwind: '$Movies'
-},
-{
-    $match: {"Movies.Title": new RegExp('^([a-z]|[A-Z])+[0-9]+([a-z]|[A-Z])+$') }
-},
+	db.cPractica.aggregate([
+	{
+		$unwind: '$Movies'
+	},
+	{
+		$match: {"Movies.Title": new RegExp('^([a-z]|[A-Z])+[0-9]+([a-z]|[A-Z])+$') }
+	},
 
-{
-    $project: {
-        _id: 0,
-        DNI: '$Client.DNI',
-        Movies: '$Movies.Title'
-     }
-}]);
+	{
+		$project: {
+			_id: 0,
+			DNI: '$Client.DNI',
+			Movies: '$Movies.Title'
+		 }
+	}]);
 
 
 Pruebas: 
@@ -328,32 +328,32 @@ notación corchete, y es gracias a una combinación de ambas que conseguimos sup
 obstáculo.
 Código:
 
-db.cPractica.group( {
-key:{"contract.country":1},
-cond: {"contract.country":{$exists:1}},
-initial:{card:0, low:0, high:0},
-reduce: function(doc,res) {
- if (typeof doc.Series !== "undefined" && doc.Series !== null)
- { 
-	 for (epi of doc.Series){ 
-		pct=epi["Viewing PCT"];
-		if(pct < 5){
-			res.low++;
-		}
-		if(pct > 95){
-			res.high++;
-		}
-		res.card++;
+	db.cPractica.group( {
+	key:{"contract.country":1},
+	cond: {"contract.country":{$exists:1}},
+	initial:{card:0, low:0, high:0},
+	reduce: function(doc,res) {
+	 if (typeof doc.Series !== "undefined" && doc.Series !== null)
+	 { 
+		 for (epi of doc.Series){ 
+			pct=epi["Viewing PCT"];
+			if(pct < 5){
+				res.low++;
+			}
+			if(pct > 95){
+				res.high++;
+			}
+			res.card++;
+		 }
+	 };
+	},
+	finalize: function(res) {
+		res.media_low=(res.low/res.card)*100  + ' %';
+		res.media_high=(res.high/res.card)*100 + ' %';
 	 }
- };
-},
-finalize: function(res) {
-	res.media_low=(res.low/res.card)*100  + ' %';
-	res.media_high=(res.high/res.card)*100 + ' %';
- }
-}); 
+	}); 
 
-Pruebas: No copio todo los valores que me regresa la consulta, solo unos pocos:
+Pruebas: No copio todos los valores que me regresa la consulta, solo unos pocos:
 
         {
                 "contract.country" : "Saudi Arabia",
@@ -504,6 +504,11 @@ palabras clave, se requiere las 10 que presenten mayor visualización media (com
 películas abandonadas). Proporcionar la palabra clave, porcentaje de abandonos, y porcentaje
 medio de visualización.
 Descripción de la solución:
+	Se hace un mapReduce para obetener las palabras mas usadas sobre las peliculas abandonadas.
+	En el map se hace emit de cada palabra para titulo de pelicula que ha sido abandonada.
+	En el reduce se agrupan las cantidades por palabra.
+	Posteriorment se hace sort descendente y se obtiene el top de las 10 palabras mas usadas 
+	por pelicula abandonada.
 Código:
 	
 	var mapGenBodrio = function() {
@@ -536,7 +541,19 @@ Código:
 		 } 
 	);
 	
-	db.pelisBodrio.find();	
 	db.pelisBodrio.find().sort({value: -1}).limit(10)
 	
 Pruebas: 
+
+> db.pelisBodrio.find().sort({value: -1}).limit(10)
+{ "_id" : "Man", "value" : 39 }
+{ "_id" : "Love", "value" : 36 }
+{ "_id" : "Last", "value" : 33 }
+{ "_id" : "Dead", "value" : 31 }
+{ "_id" : "House", "value" : 31 }
+{ "_id" : "Movie", "value" : 31 }
+{ "_id" : "with", "value" : 28 }
+{ "_id" : "You", "value" : 27 }
+{ "_id" : "Time", "value" : 23 }
+{ "_id" : "American", "value" : 22 }
+>
