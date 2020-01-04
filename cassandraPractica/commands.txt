@@ -1,0 +1,47 @@
+cd D:\mongo3.4.23\bin\
+mongoexport --db practicaMongo --collection cPractica /type csv /fields:"_id,billing,TOTAL,Client.DNI,Client.Name,Client.Surname" /out:"mydump.txt"
+mongoexport --db practicaMongo --collection cPractica /type csv /fields:"_id,billing,TOTAL,Client.DNI,Client.Name,Client.Surname,contract.country,Movies.Date,Movies.Viewing PCT" /out:"mydump.txt"
+
+
+Coleccion de preparacion para cassandra:
+
+1) Consumos por origen: se almacenarán consumos (individuales). Los informes se
+harán mensuales (por cada mes) para cada país y para cada país y director. Debe
+tenerse en cuenta que estos informes pueden venir limitados por un rango de
+porcentaje de visualización ('viewing pct'). 
+
+En mongo:
+
+	db.cPractica.aggregate([
+		{$project:{_id:0}},
+		{$unwind:"$Movies"},
+		{$project:{"contract.country":1, "Movies.Date":1,"Movies.Viewing PCT":1,"Movies.Details.Director.Name":1 }}, 
+		{$out:"cassandraPrep1"} 
+	]);
+	
+En shell:
+	
+mongoexport --db practicaMongo --collection cassandraPrep1 /type csv /fields:"_id,contract.country,Movies.Date,Movies.Viewing PCT,Movies.Details.Director.Name" /out:"mydump.txt"
+
+Descripcion: Se obtiene el pais del contrato y se hace un unwind de Movies para obtener la fecha y porcentaje de visualizacion, asi como el nombre del director
+	
+2) Resumen facturación: para cada cliente (DNI, full name) se almacenarán sus
+facturas mensuales, con los totales de #taps, tráfico (minutos), y monto de la
+factura. La consulta principal para esta tabla es el informe anual (totales por año y
+cliente). 
+
+db.cPractica.aggregate([
+		{$project:{_id:0}},
+		{$unwind:"$Movies"},
+		{$project:{"billing":1,"TOTAL":1,"Client.DNI":1,"Client.Name":1,"Client.Surname":1,"contract.country":1, "Movies.Date":1, 
+				   "Movies.Viewing PCT":1,"Movies.Details.Duration":1 }}, 
+		{$out:"cassandraPrep2"} 
+	]);
+	
+db.cPractica.aggregate([
+		{$project:{_id:0}},
+		{$unwind:"$Movies"},
+		{$project:{"billing":1,"TOTAL":1,"Client.DNI":1,"Client.Name":1,"Client.Surname":1,"contract.country":1, "Movies.Date":1, 
+				   "Movies.Viewing PCT":1,"Movies.Details.Duration":1, trafico minutos: {$multiply: ["$Movies.Details.Duration" ,{$divide:["$Movies.Viewing PCT",100]}]}}}, 
+		{$out:"cassandraPrep2"} 
+	]);
