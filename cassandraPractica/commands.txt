@@ -21,7 +21,29 @@ En mongo:
 	
 En shell:
 	
-mongoexport --db practicaMongo --collection cassandraPrep1 /type csv /fields:"_id,contract.country,Movies.Date,Movies.Viewing PCT,Movies.Details.Director.Name" /out:"mydump.txt"
+	Exportacion de datos en mongo:
+		mongoexport --db practicaMongo --collection cassandraPrep1 /type csv /fields:"_id,contract.country,Movies.Date,Movies.Viewing PCT,Movies.Details.Director.Name" /out:"cassandraPrep1CSV.txt"
+
+Diseño cassandra:
+
+	En cassandra:
+
+	CREATE KEYSPACE myKeyspace WITH replication = {'class': 'SimpleStrategy','replication_factor' : 2};
+	use myKeyspace;
+
+	create table consumosPorOrigen(
+		id text,
+		contractCountry text,
+		viewDate date,
+		viewingPCT smallint,
+		directorName text,
+		PRIMARY KEY (id)
+	);
+
+Importacion de datos a cassandra:
+
+COPY consumosPorOrigen (id,contractCountry,viewDate,viewingPCT,directorName) FROM 'D:\mongo3.4.23\bin\cassandraPrep1CSV.txt' WITH HEADER = 'true';
+
 
 Descripcion: Se obtiene el pais del contrato y se hace un unwind de Movies para obtener la fecha y porcentaje de visualizacion, asi como el nombre del director
 	
@@ -30,18 +52,30 @@ facturas mensuales, con los totales de #taps, tráfico (minutos), y monto de la
 factura. La consulta principal para esta tabla es el informe anual (totales por año y
 cliente). 
 
-db.cPractica.aggregate([
+En mongo:
+	db.cPractica.aggregate([
 		{$project:{_id:0}},
 		{$unwind:"$Movies"},
-		{$project:{"billing":1,"TOTAL":1,"Client.DNI":1,"Client.Name":1,"Client.Surname":1,"contract.country":1, "Movies.Date":1, 
-				   "Movies.Viewing PCT":1,"Movies.Details.Duration":1 }}, 
+		{$project:{"TOTAL":1,"charge date": 1,"Client.DNI":1,"Client.Name":1,"Client.Surname":1,
+				   "traficoMinutos": { $sum : {$multiply: ["$Movies.Details.Duration" ,{$divide:["$Movies.Viewing PCT",100]}]} }  }}, 
 		{$out:"cassandraPrep2"} 
 	]);
+
+En shell:
 	
-db.cPractica.aggregate([
-		{$project:{_id:0}},
-		{$unwind:"$Movies"},
-		{$project:{"billing":1,"TOTAL":1,"Client.DNI":1,"Client.Name":1,"Client.Surname":1,"contract.country":1, "Movies.Date":1, 
-				   "Movies.Viewing PCT":1,"Movies.Details.Duration":1, trafico minutos: {$multiply: ["$Movies.Details.Duration" ,{$divide:["$Movies.Viewing PCT",100]}]}}}, 
-		{$out:"cassandraPrep2"} 
-	]);
+mongoexport --db practicaMongo --collection cassandraPrep2 /type csv /fields:"_id,TOTAL,charge date,Client.DNI,Client.Name,Client.Surname,traficoMinutos" /out:"cassandraPrep2CSV.txt"
+
+Descripcion:
+
+Diseño tabla:
+
+create table resumenFacturacion(
+	id text,
+	valorFactura double,
+	chargeDate timestamp,
+	clientDNI text,
+	clientName text,
+	clientSurname text,
+	traficoMinutos int,
+	PRIMARY KEY (id)
+);
