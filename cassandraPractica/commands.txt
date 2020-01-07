@@ -42,19 +42,24 @@ Diseño cassandra:
 		PRIMARY KEY (id)
 	);
 
-Nota: Tuve que cambiar el tipo de la columna de viewDate de timestamp a text debido al siguiente error
-
-Failed to import 158 rows: ParseError - Failed to parse 08/01/2016 : time data '08/01/2016' does not match format '%Y-%m-%d',  given up without retries
-
-Y esto se debe a que no hay comtrol sobre los formatos de fecha en la instruccion COPY y por tanto se tendria que parchear para agregar la opcion.
-referencia: https://issues.apache.org/jira/browse/CASSANDRA-8970
-
 Importacion de datos a cassandra:
 
 COPY consumosPorOrigen (id,contractCountry,viewDate,viewingPCT,directorName) FROM 'D:\mongo3.4.23\bin\cassandraPrep1CSV.txt' WITH HEADER = 'true';
 
+Consulta cassandra:
 
-Descripcion: En mongo se obtiene el pais del contrato y se hace un unwind de Movies para obtener la fecha y porcentaje de visualizacion, asi como el nombre del director
+Ejemplo para el mes de enero con un porcentaje minimo de visualizacion del 99%
+select * from consumosPorOrigen where viewingPCT > 99 and viewDate >'2016-01-27' and viewDate <'2016-02-01' ALLOW FILTERING;
+
+Descripcion: 
+	En mongo se obtiene el pais del contrato y se hace un unwind de Movies para obtener la fecha y porcentaje de visualizacion, asi como el nombre del director.
+	Antes de hacer copy en cassandra se debio formatear la fecha debido a que salia el siguiente error:
+		Failed to import 158 rows: ParseError - Failed to parse 08/01/2016 : time data '08/01/2016' does not match format '%Y-%m-%d',  given up without retries
+
+		Y esto se debe a que no hay control sobre los formatos de fecha en la instruccion COPY y por tanto se tendria que parchear para agregar la opcion.
+		referencia: https://issues.apache.org/jira/browse/CASSANDRA-8970
+
+
 	
 2) Resumen facturación: para cada cliente (DNI, full name) se almacenarán sus
 facturas mensuales, con los totales de #taps, tráfico (minutos), y monto de la
