@@ -67,29 +67,50 @@ factura. La consulta principal para esta tabla es el informe anual (totales por 
 cliente). 
 
 En mongo:
+
 	db.cPractica.aggregate([
 		{$project:{_id:0}},
 		{$unwind:"$Movies"},
-		{$project:{"TOTAL":1,"charge date": 1,"Client.DNI":1,"Client.Name":1,"Client.Surname":1,
+		{$project:{"TOTAL":1,
+		"fechaFactura": {$concat: ["20",{ $substr: ["$charge date", 6, 4] },"-",{ $substr: ["$charge date", 3, 2] },"-",{ $substr: ["$charge date",0,2] }]}
+		,"Client.DNI":1,"Client.Name":1,"Client.Surname":1,
 				   "traficoMinutos": { $sum : {$multiply: ["$Movies.Details.Duration" ,{$divide:["$Movies.Viewing PCT",100]}]} }  }}, 
+		{$out:"cassandraPrep2"} 
+	]);
+
+
+	db.cPractica.aggregate([
+		{$project:{_id:0}},
+		{$unwind:"$Movies"},
+		{$project:{"TOTAL":1,
+		"fechaFactura": {$concat: ["20",{ $substr: ["$charge date", 6, 4] },"-",{ $substr: ["$charge date", 3, 2] },"-",{ $substr: ["$charge date",0,2] }]}
+		,"Client.DNI":1,"Client.Name":1,"Client.Surname":1,
+		"traficoMinutos": { $round: [
+		{ $sum : {$multiply: ["$Movies.Details.Duration" ,{$divide:["$Movies.Viewing PCT",100]}]}}}}
+		,1]}
+		, 
 		{$out:"cassandraPrep2"} 
 	]);
 
 En shell:
 	
-mongoexport --db practicaMongo --collection cassandraPrep2 /type csv /fields:"_id,TOTAL,charge date,Client.DNI,Client.Name,Client.Surname,traficoMinutos" /out:"cassandraPrep2CSV.txt"
+mongoexport --db practicaMongo --collection cassandraPrep2 /type csv /fields:"_id,TOTAL,fechaFactura,Client.DNI,Client.Name,Client.Surname,traficoMinutos" /out:"cassandraPrep2CSV.txt"
 
 Descripcion:
 
 Diseño tabla:
 
-create table resumenFacturacion(
-	id text,
-	valorFactura double,
-	chargeDate timestamp,
-	clientDNI text,
-	clientName text,
-	clientSurname text,
-	traficoMinutos int,
-	PRIMARY KEY (id)
-);
+	create table resumenFacturacion(
+		id text,
+		valorFactura double,
+		chargeDate timestamp,
+		clientDNI text,
+		clientName text,
+		clientSurname text,
+		traficoMinutos double,
+		PRIMARY KEY (id)
+	);
+
+Importacion de datos a cassandra:
+
+	COPY resumenFacturacion (id,valorFactura,chargeDate,clientDNI,clientName,clientSurname,traficoMinutos) FROM 'D:\mongo3.4.23\bin\cassandraPrep2CSV.txt' WITH HEADER = 'true';
