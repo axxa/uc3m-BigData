@@ -15,14 +15,16 @@ En mongo:
 	db.cPractica.aggregate([
 		{$project:{_id:0}},
 		{$unwind:"$Movies"},
-		{$project:{"contract.country":1, "Movies.Date":1,"Movies.Viewing PCT":1,"Movies.Details.Director.Name":1 }}, 
+		{$project:{"contract.country":1,
+		"viewDate": {$concat: [{ $substr: ["$Movies.Date", 6, 4] },"-",{ $substr: ["$Movies.Date", 3, 2] },"-",{ $substr: ["$Movies.Date",0,2] }]},
+		"Movies.Viewing PCT":1,"Movies.Details.Director.Name":1 }}, 
 		{$out:"cassandraPrep1"} 
 	]);
 	
 En shell:
 	
 	Exportacion de datos en mongo:
-		mongoexport --db practicaMongo --collection cassandraPrep1 /type csv /fields:"_id,contract.country,Movies.Date,Movies.Viewing PCT,Movies.Details.Director.Name" /out:"cassandraPrep1CSV.txt"
+		mongoexport --db practicaMongo --collection cassandraPrep1 /type csv /fields:"_id,contract.country,viewDate,Movies.Viewing PCT,Movies.Details.Director.Name" /out:"cassandraPrep1CSV.txt"
 
 Diseño cassandra:
 
@@ -34,18 +36,25 @@ Diseño cassandra:
 	create table consumosPorOrigen(
 		id text,
 		contractCountry text,
-		viewDate date,
+		viewDate timestamp,
 		viewingPCT smallint,
 		directorName text,
 		PRIMARY KEY (id)
 	);
+
+Nota: Tuve que cambiar el tipo de la columna de viewDate de timestamp a text debido al siguiente error
+
+Failed to import 158 rows: ParseError - Failed to parse 08/01/2016 : time data '08/01/2016' does not match format '%Y-%m-%d',  given up without retries
+
+Y esto se debe a que no hay comtrol sobre los formatos de fecha en la instruccion COPY y por tanto se tendria que parchear para agregar la opcion.
+referencia: https://issues.apache.org/jira/browse/CASSANDRA-8970
 
 Importacion de datos a cassandra:
 
 COPY consumosPorOrigen (id,contractCountry,viewDate,viewingPCT,directorName) FROM 'D:\mongo3.4.23\bin\cassandraPrep1CSV.txt' WITH HEADER = 'true';
 
 
-Descripcion: Se obtiene el pais del contrato y se hace un unwind de Movies para obtener la fecha y porcentaje de visualizacion, asi como el nombre del director
+Descripcion: En mongo se obtiene el pais del contrato y se hace un unwind de Movies para obtener la fecha y porcentaje de visualizacion, asi como el nombre del director
 	
 2) Resumen facturación: para cada cliente (DNI, full name) se almacenarán sus
 facturas mensuales, con los totales de #taps, tráfico (minutos), y monto de la
