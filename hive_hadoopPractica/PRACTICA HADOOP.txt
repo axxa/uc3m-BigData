@@ -1,0 +1,107 @@
+PRACTICA
+
+**********************************************************************************PARTE PIG*********************************************************************
+
+-en hadoop
+hadoop fs -copyFromLocal c:\tmp\ebooks.csv /user/hadoop/
+hadoop fs -ls /user/hadoop/
+
+hadoop fs -copyFromLocal c:\tmp\epublishing.csv /user/hadoop/
+hadoop fs -ls /user/hadoop/
+
+1-------------------------------------------------------
+
+-en PIG
+A = LOAD '/user/hadoop/ebooks.csv' USING PigStorage(',') AS (isbn:chararray, title:chararray, author:chararray, year:int);
+B = FILTER A BY year == 2000;
+C = FOREACH B GENERATE title, author;
+fs -rmr /user/hadoop/query1
+STORE C INTO '/user/hadoop/query1' USING PigStorage();
+fs -copyToLocal /user/hadoop/query1 c:\tmp\
+
+2---------------------------------------------------
+
+-en PIG
+A = LOAD '/user/hadoop/ebooks.csv' USING PigStorage(',') AS (isbn:chararray, title:chararray, author:chararray, year:int);
+D = FILTER A BY year == 1980;
+E = GROUP A all;
+F = FOREACH E GENERATE COUNT(A);
+fs -rmr /user/hadoop/query2
+STORE F INTO '/user/hadoop/query2' USING PigStorage();
+fs -copyToLocal /user/hadoop/query2 c:\tmp\
+
+3-----------------------------------------------------
+
+-en PIG
+A = LOAD '/user/hadoop/epublishing.csv' USING PigStorage(',') AS (isbn:chararray, editorial:chararray, serie:chararray, volume:int, edition:int, collection:chararray);
+B = group A by editorial;
+C = foreach B generate group, COUNT(A);
+fs -rmr /user/hadoop/query3
+STORE C INTO '/user/hadoop/query3' USING PigStorage();
+fs -copyToLocal /user/hadoop/query3 c:\tmp\
+
+
+4--------------------------------------------------------
+
+-en PIG
+D = FILTER A BY editorial == 'Elsevier';
+E = FOREACH D GENERATE serie;
+fs -rmr /user/hadoop/query4
+STORE E INTO '/user/hadoop/query4' USING PigStorage();
+fs -copyToLocal /user/hadoop/query4 c:\tmp\
+
+
+**************************************************************************************************************************************************************
+**********************************************************************************PARTE HIVE*********************************************************************
+
+-en hive
+CREATE DATABASE axxa;
+Show databases;
+Use axxa;
+
+-en hadoop
+hadoop fs -ls /hive/warehouse   
+
+-en hive
+
+CREATE TABLE IF NOT EXISTS Books (isbn string, title string, author
+string, year int)
+COMMENT 'Drivers details'
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+STORED AS TEXTFILE;
+
+LOAD DATA INPATH '/user/hadoop/ebooks.csv' OVERWRITE INTO
+TABLE Books;
+
+CREATE TABLE IF NOT EXISTS Epublishing (isbn string, editorial string, serie
+string, volume int, edition int, collection string)
+COMMENT 'Drivers details'
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+STORED AS TEXTFILE;
+
+LOAD DATA INPATH '/user/hadoop/epublishing.csv' OVERWRITE INTO
+TABLE Epublishing;
+
+
+(isbn:chararray, editorial:chararray, serie:chararray, volume:int, edition:int, collection:chararray);
+
+1----------------------------------------------------------------
+INSERT OVERWRITE DIRECTORY '/user/hadoop/HIVE_query1' select * from books where year = 2000;
+-en hadoop
+hadoop fs -copyToLocal /user/hadoop/HIVE_query1 c:\tmp\
+2---------------------------------------------------------------
+INSERT OVERWRITE DIRECTORY '/user/hadoop/HIVE_query2' select count(*) from books where year = 1980 group by year;
+-en hadoop
+hadoop fs -copyToLocal /user/hadoop/HIVE_query2 c:\tmp\
+3---------------------------------------------------------------
+INSERT OVERWRITE DIRECTORY '/user/hadoop/HIVE_query3' select editorial, count(*) from Epublishing group by editorial;
+-en hadoop
+hadoop fs -copyToLocal /user/hadoop/HIVE_query3 c:\tmp\
+4---------------------------------------------------------------
+INSERT OVERWRITE DIRECTORY '/user/hadoop/HIVE_query4' select serie from Epublishing where editorial = 'Elsevier';
+-en hadoop
+hadoop fs -copyToLocal /user/hadoop/HIVE_query4 c:\tmp\
